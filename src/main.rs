@@ -79,11 +79,14 @@ fn update_planets(planets: &mut Vec<Planet>) {
 }
 
 fn draw_planet(p: &Planet) {
+    let color = color_u8!(255, 150, 50, 255);
     let r = (1000.0 * p.m).powf(0.33);
-    draw_circle(
-        p.position.x as f32,
-        p.position.y as f32,
-        r as f32,
-        color_u8!(255, 255, 255, 255),
-    );
+    draw_circle(p.position.x as f32, p.position.y as f32, r as f32, color);
+    let color_history = Color::new(color.r, color.g, color.b, 0.3);
+    let calc_r = |i: usize| 2.0 * (500.0 - i as f32) / 500.0;
+
+    p.position_history
+        .iter()
+        .enumerate()
+        .for_each(|(i, pos)| draw_circle(pos.x as f32, pos.y as f32, calc_r(i), color_history))
 }

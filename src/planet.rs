@@ -1,10 +1,14 @@
+use std::collections::VecDeque;
+
 use super::vec3::Vec3;
 
 const DELTA_T: f64 = 0.1;
+const HISTORY_NUM: usize = 300;
 pub struct Planet {
     pub m: f64,
     pub position: Vec3,
     pub velocity: Vec3,
+    pub position_history: VecDeque<Vec3>,
 }
 
 impl Planet {
@@ -12,13 +16,21 @@ impl Planet {
         if m <= 0.0 {
             panic!("m must be positive value.")
         }
+
         return Self {
             m,
             position,
             velocity,
+            position_history: VecDeque::new(),
         };
     }
     pub fn next(&mut self, f: Vec3) {
+        // add_history
+        self.position_history.push_front(self.position);
+        if self.position_history.len() > HISTORY_NUM {
+            self.position_history.pop_back();
+        }
+
         // update pos by currenct velocity
         self.position.x += self.velocity.x * DELTA_T;
         self.position.y += self.velocity.y * DELTA_T;
