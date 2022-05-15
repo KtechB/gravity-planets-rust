@@ -18,6 +18,7 @@ fn window_conf() -> Conf {
 }
 
 const PLANETS_MAX_NUM: usize = 10;
+const MOUSE_HISTORY_LENGTH: usize = 5;
 
 #[macroquad::main(window_conf)]
 async fn main() {
@@ -63,7 +64,7 @@ async fn main() {
         // check mouse control
         let (x, y) = mouse_position();
         mouse_history.push_back(Vec3::new(x as f64, y as f64, 0.0));
-        if mouse_history.len() > 4 {
+        if mouse_history.len() > MOUSE_HISTORY_LENGTH {
             mouse_history.pop_front();
         }
 
@@ -76,7 +77,8 @@ async fn main() {
         } else if button_down_flag {
             // add new planet when mouse up
             let p_pos = mouse_history.back().unwrap().clone();
-            let p_vel = mouse_history.back().unwrap() - mouse_history.front().unwrap();
+            let p_vel = (mouse_history.back().unwrap() - mouse_history.front().unwrap())
+                * (1.0 / mouse_history.len() as f64);
             let p_new = Planet::new(2.0, p_pos, p_vel);
 
             planets.push(p_new);
