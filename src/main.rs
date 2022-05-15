@@ -1,6 +1,8 @@
 mod planet;
 mod vec3;
 
+use std::collections::VecDeque;
+
 use macroquad::prelude::*;
 use planet::Planet;
 use vec3::Vec3;
@@ -15,7 +17,8 @@ fn window_conf() -> Conf {
     }
 }
 
-const PLANETS_MAX_NUM: usize = 12;
+const PLANETS_MAX_NUM: usize = 10;
+
 #[macroquad::main(window_conf)]
 async fn main() {
     let width: f64 = screen_width() as f64;
@@ -42,7 +45,9 @@ async fn main() {
     // init mouse status
     let mut button_down_flag = false;
     let mut is_planet_num_max = false;
-    let mut mouse_before = Vec3::new(0.0, 0.0, 0.0);
+    let mut mouse_history = vec![Vec3::new(0.0, 0.0, 0.0)]
+        .into_iter()
+        .collect::<VecDeque<Vec3>>();
     loop {
         clear_background(color_u8!(20, 20, 50, 255));
         if is_planet_num_max {
@@ -57,18 +62,21 @@ async fn main() {
 
         // check mouse control
         let (x, y) = mouse_position();
+        mouse_history.push_back(Vec3::new(x as f64, y as f64, 0.0));
+        if mouse_history.len() > 4 {
+            mouse_history.pop_front();
+        }
 
         if is_mouse_button_down(MouseButton::Left) {
             if planets.len() >= PLANETS_MAX_NUM {
                 is_planet_num_max = true;
             } else {
                 button_down_flag = true;
-                mouse_before = Vec3::new(x as f64, y as f64, 0.0);
             }
         } else if button_down_flag {
             // add new planet when mouse up
-            let p_pos = Vec3::new(x as f64, y as f64, 0.0);
-            let p_vel = &p_pos - &mouse_before;
+            let p_pos = mouse_history.back().unwrap().clone();
+            let p_vel = mouse_history.back().unwrap() - mouse_history.front().unwrap();
             let p_new = Planet::new(2.0, p_pos, p_vel);
 
             planets.push(p_new);
